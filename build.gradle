@@ -1,0 +1,90 @@
+buildscript {
+	ext {
+		amazonAWS = '1.9.0'
+		springBootVersion = '1.5.8.RELEASE'
+		jerseyVersion = '2.23.1'
+		jsonPath = '2.1.0'
+		gitPropertiesVersion = '1.4.7'
+		guavaVersion = '19.0'
+		springContextSupport = '4.2.6.RELEASE'
+	}
+	repositories {
+		mavenCentral()
+		maven { url "https://repo.spring.io/snapshot" }
+		maven { url "https://plugins.gradle.org/m2/" }
+	}
+	dependencies {
+		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("io.spring.gradle:dependency-management-plugin:0.5.4.RELEASE")
+		classpath("gradle.plugin.com.gorylenko.gradle-git-properties:gradle-git-properties:${gitPropertiesVersion}")		
+	}
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+apply plugin: "com.gorylenko.gradle-git-properties"
+
+jar {
+	baseName = 'sample'
+	version = '0.0.1-SNAPSHOT'
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+	maven { url "https://repo.spring.io/snapshot" }
+}
+
+configurations.all {
+    resolutionStrategy.cacheChangingModulesFor 0, 'seconds'    
+    resolutionStrategy.dependencySubstitution {
+    	// Substitute one module dependency for another
+    	//jersey 2.22.1 is being replaced by 2.23.1 a we want to use LoggingFeature 
+    	substitute module("org.glassfish.jersey.containers:jersey-container-servlet-core:2.22.1") with module("org.glassfish.jersey.containers:jersey-container-servlet-core:${jerseyVersion}")
+    	substitute module("org.glassfish.jersey.containers:jersey-container-servlet:2.22.1") with module("org.glassfish.jersey.containers:jersey-container-servlet:${jerseyVersion}")
+  } 
+}
+
+dependencies {
+	compile("org.springframework.boot:spring-boot-starter-actuator:${springBootVersion}")
+	compile("org.springframework.boot:spring-boot-starter-integration:${springBootVersion}")
+	compile("org.springframework.boot:spring-boot-starter-jersey")
+	compile("org.springframework.cloud:spring-cloud-starter-hystrix:1.2.5.RELEASE"){
+		exclude group: 'com.netflix.archaius', module: 'archaius-core'
+	}
+	compile("com.netflix.archaius:archaius-core:0.7.4")		
+	compile("org.apache.httpcomponents:httpclient:4.5.2")
+	compile("org.apache.httpcomponents:httpcore:4.4.4")
+	compile("com.jayway.jsonpath:json-path:${jsonPath}")
+	compile("com.google.guava:guava:${guavaVersion}")
+	compile("org.springframework:spring-context-support:${springContextSupport}")	
+	compile("org.springframework.integration:spring-integration-java-dsl:1.1.4.RELEASE")
+	compile("org.springframework:spring-webmvc")
+	
+	compile group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.3'
+    compile group: 'oauth.signpost', name: 'signpost-core', version: '1.2.1.2'
+    compile group: 'oauth.signpost', name: 'signpost-commonshttp4', version: '1.2'
+    compile group: 'commons-io', name: 'commons-io', version: '2.4'
+    compile group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.3.3'
+    compile group: 'org.asynchttpclient', name: 'async-http-client', version: '2.0.1'
+}
+
+tasks.withType(org.springframework.boot.gradle.run.BootRunTask) {
+	systemProperties = System.properties
+}
+
+eclipse {
+	classpath {
+		containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
+		containers 'org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8'
+	}
+}
+
+task wrapper(type: Wrapper) {
+	gradleVersion = '3.1'
+}
