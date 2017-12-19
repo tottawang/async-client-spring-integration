@@ -24,10 +24,10 @@ public class Aggregator implements ReleaseStrategy {
     // boolean result = group.getMessages().size() == event.getCount();
 
     Integer count = (Integer) message.getPayload();
-    boolean result = group.getMessages().size() == count;
+    boolean result = group.size() == count;
 
     if (result) {
-      log.info(String.format("Aggregator: done!! %s completed %s", "", group.getMessages().size()));
+      log.info(String.format("Aggregator: done!! %s completed %s", "", group.size()));
     } else {
       log.info("Aggregator: not done yet!!");
     }

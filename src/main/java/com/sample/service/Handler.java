@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.integration.channel.ExecutorChannel;
+import org.springframework.integration.channel.DirectChannel;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.GenericMessage;
 import org.springframework.stereotype.Component;
@@ -33,7 +33,7 @@ public class Handler {
 
   @Autowired
   @Qualifier("aggregatorChannel")
-  private ExecutorChannel aggregatorChannel;
+  private DirectChannel aggregatorChannel;
 
   @PostConstruct
   public void init() {
@@ -81,8 +81,8 @@ public class Handler {
       @Override
       public Response onCompleted() throws Exception {
         Response response = builder.build();
-        aggregatorChannel.send(new GenericMessage<>(count, message.getHeaders()));
         log.info("send aggregator");
+        aggregatorChannel.send(new GenericMessage<>(count, message.getHeaders()));
         return response;
       }
     };
